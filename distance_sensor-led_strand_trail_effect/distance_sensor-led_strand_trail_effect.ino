@@ -16,11 +16,15 @@
 #define NUM_LEDS 29
 #define DATA_PIN 11
 #define CLOCK_PIN 13
+#define LASTLED -1 
+#define FIRST 0 
 
 // Define the array of leds
 CRGB leds[NUM_LEDS];
 int led = 0;
 int oldLed = 0;
+// The last is the "dead pixel" - the off pixel
+int ledArr[4] = {};
 
 SFEVL53L1X distanceSensor;
 int distance = 0;
@@ -56,18 +60,22 @@ void loop(void)
 	// 600 being "far"
 	// 50 being "close"
 	// 29 LEDs
-	oldLed = led; // Reassign the LED value to make space for a new value. 
-	led = map(distance, 50, 600, 1, 29); // Retreive new value.
+
+	ledArr[4] =  ledArr[3]; // Reassign the LED value to make space for a new value. 
+	ledArr[3] =  ledArr[2]; // Reassign the LED value to make space for a new value. 
+	ledArr[2] =  ledArr[1]; // Reassign the LED value to make space for a new value. 
+	ledArr[0] = map(distance, 50, 600, 1, 29); // Retreive new value.
 	
 	// If it's a new value (different from old), then turn off the old and turn on the new. 
-	if( led != oldLed ) 
+	if( ledArr[0] != ledArr[1] ) 
 	{
-		leds[oldLed] = CRGB::Black; // old off
+		leds[ledArr[4] = CRGB::Black; // old off
 
 		FastLED.show();
 
-		leds[led].b = random(50, 100); // new on, trying something fun here
-		leds[led].g = random(50, 100); // Spoiler alert - not so fun.
+		leds[ledArr[0]] = CRGB::Red;
+		leds[ledArr[1]] = CRGB::Red;
+		leds[ledArr[2]] = CRGB::Red;
 
 		FastLED.show(); 
 	}
