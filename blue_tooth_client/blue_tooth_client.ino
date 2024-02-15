@@ -1,6 +1,7 @@
 #include "BLEDevice.h"
 #include <Wire.h>
 #include "SparkFun_Qwiic_OLED.h"
+#include "res/qw_fnt_8x16.h"
 
 QwiicNarrowOLED myOLED;
 String strCO2 = "CO2: ";
@@ -117,6 +118,8 @@ void setup() {
     }
 
     Serial.println("Communication established with display");
+
+    myOLED.setFont(QW_FONT_8X16);
 
     String hello = "Hello You."; // our message
     // Center the text.
