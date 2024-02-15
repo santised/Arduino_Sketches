@@ -1,3 +1,5 @@
+// For new UUID generation, use https://www.uuidgenerator.net/
+
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>

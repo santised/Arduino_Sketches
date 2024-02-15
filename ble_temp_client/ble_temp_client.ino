@@ -1,3 +1,4 @@
+// For new UUID generation, use https://www.uuidgenerator.net/
 #include "BLEDevice.h"
 #include <Wire.h>
 #include "SparkFun_Qwiic_OLED.h"
