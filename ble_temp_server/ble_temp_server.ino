@@ -5,28 +5,28 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 #include <Wire.h>
-#include "SparkFun_ENS160.h"
+#include "SparkFun_STTS22H.h"
+
+SparkFun_STTS22H mySTTS; 
+
 
 //BLE server name
 #define bleServerName "AESOP_ESP32C3"
-
-SparkFun_ENS160 myENS;
-
-// Timer variables
-unsigned long lastTime = 0;
-unsigned long timerDelay = 10000;
-unsigned int CO2;
-
-
-bool deviceConnected = false;
-
-// See the following for generating UUIDs:
-// https://www.uuidgenerator.net/
 #define SERVICE_UUID "91bad492-b950-4226-aa2b-4ede9fa42f59"
 
-// ENS CO2 Characteristic and Descriptor
-BLECharacteristic ensCO2ConcentrationCharacteristic("f78ebbff-c8b7-4107-93de-889a6a06d408", BLECharacteristic::PROPERTY_NOTIFY);
-BLEDescriptor ensCO2Descriptor(BLEUUID((uint16_t)0x2902));
+// Timer variables
+unsigned int temperature;
+float tempF; 
+static char charTemperature[6];
+
+bool deviceConnected = false;
+unsigned long lastTime = 0;
+unsigned long timerDelay = 10000;
+
+
+// STTS22H temperature Characteristic and Descriptor
+BLECharacteristic sttTempCharacteristic("f78ebbff-c8b7-4107-93de-889a6a06d408", BLECharacteristic::PROPERTY_NOTIFY);
+BLEDescriptor sttTempDescriptor(BLEUUID((uint16_t)0x2902));
 
 //Setup callbacks onConnect and onDisconnect
 class MyServerCallbacks: public BLEServerCallbacks {
@@ -48,19 +48,17 @@ void setup() {
     Serial.begin(115200);
     
     // Begin sensor
-    if(!myENS.begin())
-    {
-        Serial.println("Could not communicate with the ENS160.");
-        while(1)
-            ;
-    }
+	if( !mySTTS.begin() )
+	{
+		Serial.println("Did not begin.");
+		while(1);
+	}
 
-    if(myENS.setOperatingMode(SFE_ENS160_RESET))
-        Serial.println("ENS160 reset.");
-
-    delay(100);
-
-    myENS.setOperatingMode(SFE_ENS160_STANDARD);
+	mySTTS.setDataRate(STTS22H_POWER_DOWN);
+	// Enables incrementing register behavior for the IC.
+	// It is not enabled by default as the datsheet states and
+	// is vital for reading the two temperature registers.
+	mySTTS.enableAutoIncrement();
 
     // Create the BLE Device
     BLEDevice::init(bleServerName);
@@ -70,16 +68,16 @@ void setup() {
     pServer->setCallbacks(new MyServerCallbacks());
 
     // Create the BLE Service
-    BLEService *ensService = pServer->createService(SERVICE_UUID);
+    BLEService *stts22hService = pServer->createService(SERVICE_UUID);
 
     // Create BLE Characteristics and Create a BLE Descriptor
-    // ENS CO2 Concentration Characteristic.
-    ensService->addCharacteristic(&ensCO2ConcentrationCharacteristic);
-    ensCO2Descriptor.setValue("CO2 Concentration");
-    ensCO2ConcentrationCharacteristic.addDescriptor(&ensCO2Descriptor);
+    // STTS22H temperature Concentration Characteristic.
+    stts22hService->addCharacteristic(&sttTempCharacteristic);
+    sttTempDescriptor.setValue("Temperatue Data.");
+    sttTempCharacteristic.addDescriptor(&sttTempDescriptor);
 
     // Start the service
-    ensService->start();
+    stts22hService->start();
 
     // Start advertising
     BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
@@ -92,18 +90,23 @@ void loop() {
 
   if (deviceConnected) {
     if ((millis() - lastTime) > timerDelay) {
+        mySTTS.setDataRate(STTS22H_ONE_SHOT); 
+        delay(1);
+		mySTTS.getTemperatureF(&tempF);
 
-        //Get CO2 reading from ENS
-        CO2 = myENS.getECO2();
-        static char charCO2[10];
-        itoa(CO2, charCO2, 10);
+		// Temperature in different units can be retrieved
+		// using the following functions.
 
-        // Set the charactersistic's value to the CO2 reading
-        ensCO2ConcentrationCharacteristic.setValue(charCO2);
-        ensCO2ConcentrationCharacteristic.notify();
-        Serial.print("CO2: ");
-        Serial.print(CO2);
-        Serial.println("ppm");
+		//mySTTS.getTemperatureC(&tempF);
+		//mySTTS.getTemperatureK(&tempF);
+        dtostrf(tempF, 6, 2, charTemperature);
+
+        // Set the charactersistic's value to the temperature reading
+        sttTempCharacteristic.setValue(charTemperature);
+        sttTempCharacteristic.notify();
+		Serial.print("Temp: "); 
+		Serial.print(tempF);
+		Serial.println("F"); 
 
         lastTime = millis();
     }
