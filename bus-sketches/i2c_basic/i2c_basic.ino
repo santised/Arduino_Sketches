@@ -2,8 +2,10 @@
 
 const int oledAddrOpen = 0x3C; 
 const int oledAddrClosed = 0x3D; 
-const int rowBegin = 0x00; 
-const int rowEnd = 0x; 
+const int rowStart = 0x00; 
+const int rowEnd = 0x4F; 
+const int colStart = 0x00; 
+const int colEnd = 0x27; 
 int led = LED_BUILTIN;
 
 enum registerMap
@@ -53,6 +55,16 @@ void setup()
 
   getDriverID();
   setupOLED();
+
+  Wire.beginTransmission(oledAddrOpen);
+  for( size_t i = rowStart; i < rowEnd; i++ ) 
+  {
+    for (size_t j = colStart; j < colEnd; j++) 
+    {
+      writeColor();
+    }
+  }
+  Wire.endTransmission();
 }
 
 void loop()
@@ -71,7 +83,7 @@ void getDriverID()
 
   while(Wire.available())
   {
-    Serial.print("0x ");
+    Serial.print("0x");
     Serial.println(Wire.read(), HEX);
   }
 
@@ -88,12 +100,6 @@ void setupOLED()
 
 void writeColor()
 {
-  Wire.beginTransmission(oledAddrOpen);
-  Wire.write(ramControlByte);
+  Wire.write(controlByte);
   Wire.write(0xFF);
-  Wire.write(ramControlByte);
-  Wire.write(0xFF);
-  Wire.write(ramControlByte);
-  Wire.write(0xFF);
-  Wire.endTransmission();
 }
