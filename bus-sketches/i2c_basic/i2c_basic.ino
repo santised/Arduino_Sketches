@@ -2,11 +2,14 @@
 
 const int oledAddrOpen = 0x3C; 
 const int oledAddrClosed = 0x3D; 
+const int rowBegin = 0x00; 
+const int rowEnd = 0x; 
 int led = LED_BUILTIN;
 
 enum registerMap
 {
   controlByte = 0x80,
+  ramControlByte = 0x40,
 
   //Three byte command - command, start, stop
   setRowStartEnd = 0x22,  
@@ -14,8 +17,8 @@ enum registerMap
   //Three byte command - command, start, stop
   setColStartEnd = 0x21,  
   
-  displayOn = 0xAE,  
-  displayOff = 0xAF,  
+  displayOn = 0xAF,  
+  displayOff = 0xAE,  
 
   panelID = 0xE1,  
   driverID = 0xE2, //BUSY+ON/OFF+0x60
@@ -80,5 +83,17 @@ void setupOLED()
   Wire.beginTransmission(oledAddrOpen);
   Wire.write(controlByte);
   Wire.write(displayOn);
+  Wire.endTransmission();
+}
+
+void writeColor()
+{
+  Wire.beginTransmission(oledAddrOpen);
+  Wire.write(ramControlByte);
+  Wire.write(0xFF);
+  Wire.write(ramControlByte);
+  Wire.write(0xFF);
+  Wire.write(ramControlByte);
+  Wire.write(0xFF);
   Wire.endTransmission();
 }
