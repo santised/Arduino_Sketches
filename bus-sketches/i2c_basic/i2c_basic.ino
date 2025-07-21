@@ -13,6 +13,9 @@ enum registerMap
 
   //Three byte command - command, start, stop
   setColStartEnd = 0x21,  
+  
+  displayOn = 0xAE,  
+  displayOff = 0xAF,  
 
   panelID = 0xE1,  
   driverID = 0xE2, //BUSY+ON/OFF+0x60
@@ -45,11 +48,8 @@ void setup()
   Serial.println("Result (want '0'): ");
   Serial.println(temp); 
 
-  while (1)
-  {
-    getDriverID() 
-  }
-
+  getDriverID();
+  setupOLED();
 }
 
 void loop()
@@ -67,8 +67,10 @@ void getDriverID()
 
 
   while(Wire.available())
-    Serial.print("0x ")
+  {
+    Serial.print("0x ");
     Serial.println(Wire.read(), HEX);
+  }
 
   Wire.endTransmission();
   delay(1000);
@@ -77,11 +79,6 @@ void setupOLED()
 {
   Wire.beginTransmission(oledAddrOpen);
   Wire.write(controlByte);
-  Wire.write(setRowStartEnd);
-  Wire.write(0x00);
-  Wire.write(0x9F);
-  Wire.write(setColStartEnd);
-  Wire.write(0x00);
-  Wire.write(0x4F);
+  Wire.write(displayOn);
   Wire.endTransmission();
 }
