@@ -7,9 +7,15 @@ int led = LED_BUILTIN;
 enum registerMap
 {
   controlByte = 0x80,
-  randomValue = 0x1,
+
+  //Three byte command - command, start, stop
+  setRowStartEnd = 0x22,  
+
+  //Three byte command - command, start, stop
+  setColStartEnd = 0x21,  
+
   panelID = 0xE1,  
-  driverID = 0xE2, //0x60 is the answer
+  driverID = 0xE2, //BUSY+ON/OFF+0x60
 }; 
 
 void setup()
@@ -41,18 +47,7 @@ void setup()
 
   while (1)
   {
-    Wire.beginTransmission(oledAddrOpen);
-    Wire.write(controlByte);
-    Wire.write(driverID);
-    Wire.endTransmission();
-    Wire.requestFrom(oledAddrOpen, 1); //just read?`
-
-
-    while(Wire.available())
-      Serial.println(Wire.read(), HEX);
-
-    Wire.endTransmission();
-    delay(1000);
+    getDriverID() 
   }
 
 }
@@ -60,4 +55,33 @@ void setup()
 void loop()
 {
     delay(1000);
+}
+
+void getDriverID()
+{
+  Wire.beginTransmission(oledAddrOpen);
+  Wire.write(controlByte);
+  Wire.write(driverID);
+  Wire.endTransmission();
+  Wire.requestFrom(oledAddrOpen, 1);
+
+
+  while(Wire.available())
+    Serial.print("0x ")
+    Serial.println(Wire.read(), HEX);
+
+  Wire.endTransmission();
+  delay(1000);
+}
+void setupOLED()
+{
+  Wire.beginTransmission(oledAddrOpen);
+  Wire.write(controlByte);
+  Wire.write(setRowStartEnd);
+  Wire.write(0x00);
+  Wire.write(0x9F);
+  Wire.write(setColStartEnd);
+  Wire.write(0x00);
+  Wire.write(0x4F);
+  Wire.endTransmission();
 }
