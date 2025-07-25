@@ -12,8 +12,6 @@
 */
 #include <Wire.h>
 
-  
-
 const int oledAddrOpen = 0x3C; 
 const int oledAddrClosed = 0x3D; 
 const int rowStart = 0x00; 
@@ -44,6 +42,7 @@ enum commandList
   commandCommonOutScan = 0xC8, // scan COM[n-1] to COM0 default = 0xC0 
   commandDisplayRotation = 0xA3,
   commandDisableEntireDisplay = 0xA4,
+  commandEnableEntireDisplay = 0xA5,
   commandNormalDisplay = 0xA6, //default 
   commandMultiplexRatio = 0xA8,
   commandDisplayOffset = 0xD3,
@@ -106,14 +105,13 @@ void setup()
   Serial.println(temp); 
 
   // Sanity Check.
-  getDriverID();
-  //setupOLED();
-  manufactureSetup();
+  //getDriverID();
+  //manufactureSetup();
   //fillSquare();
+  //writeCommand(commandDisplayOff);
 
   Serial.println("Write finished, Looping.");
   writeCommand(commandDisableEntireDisplay);
-  //writeCommand(commandDisplayOff);
   Serial.print("Checking if display is on: ");
   getDriverID();
 }
@@ -121,81 +119,4 @@ void setup()
 void loop()
 {
     delay(1000);
-}
-
-void getDriverID()
-{
-  writeCommand(commandDriverID);
-
-  Wire.requestFrom(oledAddrOpen, 1);
-
-  while(Wire.available())
-  {
-    Serial.print("0x");
-    Serial.println(Wire.read(), HEX);
-  }
-
-  Wire.endTransmission();
-  delay(1000);
-}
-void setupOLED()
-{
-  Wire.beginTransmission(oledAddrOpen);
-  Wire.write(commandControlByte);
-  Wire.write(commandDisplayOn);
-  Wire.endTransmission();
-}
-
-void manufactureSetup()
-{
-  writeCommand(commandDisplayOff);
-  writeCommandParameter(commandContrastControl, contrast);
-  writeCommandParameter(commandGrayMono, monoMode);
-  writeCommand(commandCommonOutScan);
-  writeCommand(commandDisableEntireDisplay);
-  writeCommandParameter(commandMultiplexRatio, multiplexRatio);
-  writeCommandParameter(commandDisplayOffset, displayOffset);
-  writeCommandParameter(commandDischargeFront, dischargeFront);
-  writeCommandParameter(commandDischargeBack, dischargeBack);
-  writeCommandParameter(commandPreCharge, preCharge);
-  writeCommand(commandDisplayOn);
-}
-
-void fillSquare()
-{
-
-  Wire.beginTransmission(oledAddrOpen);
-  Wire.write(commandControlByte);
-  // data pointer
-  Wire.write(rowStart);
-  Wire.endTransmission();
-
-  Wire.beginTransmission(oledAddrOpen);
-  // write to RAM
-  Wire.write(ramControlByte);
-  for( int i = rowStart; i < (rowEnd - rowStart); i++ ) 
-  {
-    for (int j = colStart; j < (colEnd - colStart); j++) 
-    {
-      Wire.write(0x0F);
-    }
-  }
-  Wire.endTransmission();
-}
-
-void writeCommand(uint8_t command)
-{
-  Wire.beginTransmission(oledAddrOpen);
-  Wire.write(controlDataByteFollow);
-  Wire.write(command);
-  Wire.endTransmission();
-}
-
-void writeCommandParameter(uint8_t command, uint8_t parameter)
-{
-  Wire.beginTransmission(oledAddrOpen);
-  Wire.write(commandControlByte);
-  Wire.write(command);
-  Wire.write(parameter);
-  Wire.endTransmission();
 }
