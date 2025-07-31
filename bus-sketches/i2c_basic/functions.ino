@@ -1,7 +1,7 @@
 const int rowStart = 0x00; 
 const int rowEnd = 0x3F; 
 const int colStart = 0x00; 
-const int colEnd = 0x3F; 
+const int colEnd = 0x1F; 
 const int mono = 0x01;
 
 enum commandList
@@ -20,7 +20,7 @@ enum commandList
   commandStartColHigh = 0x10,
   commandStartLine = 0xA2,
 
-  commandContrastControl = 0x81,
+  commandContrastControl = 0x0F,
   commandHorizAddressing = 0x20,
   commandDisplayOn = 0xAF,  
   commandDisplayOff = 0xAE,  
@@ -86,7 +86,7 @@ void manufactureSetup()
   writeCommand(commandDisplayOff);
   setStartStop(commandRowStartEnd, rowStart, rowEnd);
   setStartStop(commandColStartEnd, colStart, colEnd);
-  writeCommand(commandStartLine);
+  writeCommandParameter(commandStartLine, manDisplayStart);
   writeCommandParameter(commandContrastControl, contrast);
   writeCommandParameter(commandGrayMono, monoMode);
   writeCommandParameter(commandHorizAddressing, horizontalAddressing);
@@ -109,13 +109,21 @@ void fillSquare(uint8_t color)
 {
   Wire.beginTransmission(oledAddrOpen);
   Wire.write(ramControlByte);
-  for( int i = rowStart; i < 128; i++ ) 
+  // Horizontal Addressing means we traverse rows - filling the columns first
+  // row 0 - column 0,1,2,3,4.....128, row 1 - column 0,1,2,3,4...128
+  // Vertical lines
+  for( int i = rowStart; i < width; i++ ) 
   {
-    for (int j = colStart; j < 128; j++) 
-    {
       Wire.write(color);
-    }
   }
+  Wire.endTransmission();
+}
+
+void drawPixel(uint8_t pixelWidth)
+{
+  Wire.beginTransmission(oledAddrOpen);
+  Wire.write(ramControlByte);
+  Wire.write(pixelWidth);
   Wire.endTransmission();
 }
 

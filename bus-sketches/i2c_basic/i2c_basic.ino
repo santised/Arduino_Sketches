@@ -16,7 +16,11 @@ const int oledAddrOpen = 0x3C;
 const int oledAddrClosed = 0x3D; 
 const int black = 0x00; 
 const int white = 0x01; 
+const int solid = 0xFF; 
 const int reset = A0;
+const int height = 128;
+const int width = 128;
+const int fullPixelWidth = 16;
 
 int count = 0; 
 
@@ -28,6 +32,9 @@ void setup()
   //Serial2.begin(115200, SERIAL_8N1); // Default config settings
   Wire.begin();
 
+  //while(!Serial)
+  //  ;
+
   Serial.println("I2C Sketch test.");
 
   pinMode(reset, OUTPUT);
@@ -36,39 +43,44 @@ void setup()
   digitalWrite(reset, HIGH); 
 
   //Wire.setClock(10000); //Low mode
-  //Wire.setClock(4000000); //Fast mode
-  //Wire.setClock(1000000); //Fast mode plus
+  Wire.setClock(4000000); //Fast mode
+  //Wire.setClock(10000000); //Fast mode plus
   //Wire.setClock(3400000); //High speed mode
-  //Wire.beginTransmission(oledAddrOpen);
-  //int temp = Wire.endTransmission(oledAddrOpen);
-  //Serial.println("Result (want '0'): ");
-  //Serial.println(temp); 
-
-  // Sanity Check.
+  
   //getDriverID();
   manufactureSetup();
   writeCommandParameter(0xB0, 0x00);
   writeCommand(0x00);
   writeCommand(0x10);
-  fillSquare(black);
 }
 
 void loop()
 {
-  fillSquare(white);
-  //delay(200);
-  fillSquare(black);
-  delay(200);
-  //for(int i = 0; i < 0x1F; i++)
+  //pixel is 8 bits wide so 8 * 16 = 128
+  //for(int k = 0; k <= solid; k++)
   //{
-  //  fillSquare(white);
+  //  for(int j = 0; j < height; j ++)
+  //  {
+  //    for(int i = 0; i < 16; i++)
+  //    {
+  //      drawPixel(k);
+  //    }
+  //  }
   //}
-  //delay(200);
-  //for(int i = 0; i < 0x1F; i++)
-  //{
-  //  fillSquare(black);
-  //}
-  //delay(200);
-  
+  //delay(2000);
+  for(int j = 0; j < height; j ++)
+  {
+    for(int i = 0; i < fullPixelWidth; i++)
+    {
+      drawPixel(solid);
+    }
+  }
+  for(int j = 0; j < height; j ++)
+  {
+    for(int i = 0; i < fullPixelWidth; i++)
+    {
+      drawPixel(black);
+    }
+  }
 
 }
