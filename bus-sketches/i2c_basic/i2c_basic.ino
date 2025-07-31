@@ -14,7 +14,11 @@
 
 const int oledAddrOpen = 0x3C; 
 const int oledAddrClosed = 0x3D; 
-int reset = A0;
+const int black = 0x00; 
+const int white = 0x01; 
+const int reset = A0;
+
+int count = 0; 
 
 
 void setup()
@@ -35,35 +39,36 @@ void setup()
   //Wire.setClock(4000000); //Fast mode
   //Wire.setClock(1000000); //Fast mode plus
   //Wire.setClock(3400000); //High speed mode
-  Wire.beginTransmission(oledAddrOpen);
-  int temp = Wire.endTransmission(oledAddrOpen);
-  Serial.println("Result (want '0'): ");
-  Serial.println(temp); 
+  //Wire.beginTransmission(oledAddrOpen);
+  //int temp = Wire.endTransmission(oledAddrOpen);
+  //Serial.println("Result (want '0'): ");
+  //Serial.println(temp); 
 
   // Sanity Check.
   //getDriverID();
   manufactureSetup();
-  //emptySquare();
-
-  Serial.println("Write finished, Looping.");
-  //writeCommand(commandDisableEntireDisplay);
-  Serial.print("Checking if display is on: ");
-  getDriverID();
+  writeCommandParameter(0xB0, 0x00);
+  writeCommand(0x00);
+  writeCommand(0x10);
+  fillSquare(black);
 }
 
 void loop()
 {
-  for( int row = 0; row < 0x3F; row++)
-  {
-    writeCommandParameter(0xB0, row);
-    writeCommandParameter(0x00, 0x00);
-    writeCommandParameter(0x10, 0x10);
-    delay(10);
-      for(int i = 0; i < 0x0F; i++)
-      {
-        fillSquare(i);
-        delay(100);
-      }
-    }
-  delay(100);
+  fillSquare(white);
+  //delay(200);
+  fillSquare(black);
+  delay(200);
+  //for(int i = 0; i < 0x1F; i++)
+  //{
+  //  fillSquare(white);
+  //}
+  //delay(200);
+  //for(int i = 0; i < 0x1F; i++)
+  //{
+  //  fillSquare(black);
+  //}
+  //delay(200);
+  
+
 }

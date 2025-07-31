@@ -80,13 +80,6 @@ void getDriverID()
   Wire.endTransmission();
   delay(1000);
 }
-void setupOLED()
-{
-  Wire.beginTransmission(oledAddrOpen);
-  Wire.write(commandControlByte);
-  Wire.write(commandDisplayOn);
-  Wire.endTransmission();
-}
 
 void manufactureSetup()
 {
@@ -114,21 +107,11 @@ void manufactureSetup()
 
 void fillSquare(uint8_t color)
 {
-
-  writeCommandParameter(commandStartRow, 0x3F);
-  writeCommandParameter(commandStartColLow, 0x0F);
-  writeCommandParameter(commandStartColHigh, 0x04);
   Wire.beginTransmission(oledAddrOpen);
   Wire.write(ramControlByte);
-  //Wire.write(rowStart);
-  //Wire.endTransmission();
-
-  //Wire.beginTransmission(oledAddrOpen);
-  // write to RAM
-  //Wire.write(ramControlByte);
-  for( int i = rowStart; i < (rowEnd - rowStart); i++ ) 
+  for( int i = rowStart; i < 128; i++ ) 
   {
-    for (int j = colStart; j < (colEnd - colStart); j++) 
+    for (int j = colStart; j < 128; j++) 
     {
       Wire.write(color);
     }
@@ -136,29 +119,6 @@ void fillSquare(uint8_t color)
   Wire.endTransmission();
 }
 
-void emptySquare()
-{
-
-  writeCommandParameter(commandStartRow, 0x00);
-  writeCommandParameter(commandStartColLow, 0x00);
-  writeCommandParameter(commandStartColHigh, 0x10);
-  Wire.beginTransmission(oledAddrOpen);
-  Wire.write(ramControlByte);
-  //Wire.write(rowStart);
-  //Wire.endTransmission();
-
-  //Wire.beginTransmission(oledAddrOpen);
-  // write to RAM
-  //Wire.write(ramControlByte);
-  for( int i = rowStart; i < (rowEnd - rowStart); i++ ) 
-  {
-    for (int j = colStart; j < (colEnd - colStart); j++) 
-    {
-      Wire.write(0x01);
-    }
-  }
-  Wire.endTransmission();
-}
 
 void writeCommand(uint8_t command)
 {
