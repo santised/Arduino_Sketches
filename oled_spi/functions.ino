@@ -6,11 +6,6 @@ const int mono = 0x01;
 
 enum commandList
 {
-  commandControlByte = 0x00,
-  anotherControlByte = 0xC0,
-  controlDataByteFollow = 0x80,
-  ramControlByte = 0x40,
-
   //Two byte command - command, start, stop
   commandRowStartEnd = 0x22,  
   //Two byte command - command, start, stop
@@ -65,22 +60,6 @@ enum manufactureSettings
   vcomDeselect = 0x3F,//default 
   externalIREF = 0x02
 };
-void getDriverID()
-{
-  writeCommand(commandDriverID);
-
-  Wire.requestFrom(oledAddrOpen, 1);
-
-  while(Wire.available())
-  {
-    Serial.print("0x");
-    Serial.println(Wire.read(), HEX);
-  }
-
-  Wire.endTransmission();
-  delay(1000);
-}
-
 void manufactureSetup()
 {
   writeCommand(commandDisplayOff);
@@ -105,53 +84,33 @@ void manufactureSetup()
   writeCommand(commandDisplayOn);
 }
 
-void fillSquare(uint8_t color)
-{
-  Wire.beginTransmission(oledAddrOpen);
-  Wire.write(ramControlByte);
-  // Horizontal Addressing means we traverse rows - filling the columns first
-  // row 0 - column 0,1,2,3,4.....128, row 1 - column 0,1,2,3,4...128
-  // Vertical lines
-  for( int i = rowStart; i < width; i++ ) 
-  {
-      Wire.write(color);
-  }
-  Wire.endTransmission();
-}
-
 void drawPixel(uint8_t pixelWidth)
 {
-  Wire.beginTransmission(oledAddrOpen);
-  Wire.write(ramControlByte);
-  Wire.write(pixelWidth);
-  Wire.endTransmission();
+  digitalWrite(cs, LOW);
+  digitalWrite(deeCee, HIGH);
+  SPI.beginTransaction(oledSettings);
+  SPI.transfer(pixelWidth);
+  digitalWrite(cs, HIGH);
+  SPI.endTransaction();
 }
-
-
 void writeCommand(uint8_t command)
 {
-  Wire.beginTransmission(oledAddrOpen);
-  Wire.write(commandControlByte);
-  Wire.write(command);
-  Wire.endTransmission();
+  digitalWrite(cs, LOW);
+  digitalWrite(deeCee, LOW);
+  SPI.beginTransaction(oledSettings);
+  SPI.transfer(command);
+  digitalWrite(cs, HIGH);
+  SPI.endTransaction();
 }
 
 void writeCommandParameter(uint8_t command, uint8_t parameter)
 {
-  Wire.beginTransmission(oledAddrOpen);
-  Wire.write(commandControlByte);
-  Wire.write(command);
-  Wire.write(parameter);
-  Wire.endTransmission();
+  digitalWrite(cs, LOW);
+  digitalWrite(deeCee, LOW);
+  SPI.beginTransaction(oledSettings);
+  SPI.transfer(command);
+  SPI.transfer(parameter);
+  digitalWrite(cs, HIGH);
+  SPI.endTransaction();
 }
 
-void setStartStop(uint8_t command, uint8_t start, uint8_t stop)
-{
-
-  Wire.beginTransmission(oledAddrOpen);
-  Wire.write(commandControlByte);
-  Wire.write(command);
-  Wire.write(start);
-  Wire.write(stop);
-  Wire.endTransmission();
-}

@@ -43,7 +43,7 @@ void setup()
   digitalWrite(reset, HIGH); 
 
   //Wire.setClock(10000); //Low mode
-  Wire.setClock(4000000); //Fast mode
+  //Wire.setClock(4000000); //Fast mode
   //Wire.setClock(10000000); //Fast mode plus
   //Wire.setClock(3400000); //High speed mode
   
